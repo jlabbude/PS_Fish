@@ -1,3 +1,0 @@
-C:/Users/João/Desktop/codigo/python/robloxteste/build/CMakeFiles/robloxteste.dir
-C:/Users/João/Desktop/codigo/python/robloxteste/build/CMakeFiles/edit_cache.dir
-C:/Users/João/Desktop/codigo/python/robloxteste/build/CMakeFiles/rebuild_cache.dir
