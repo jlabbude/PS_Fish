@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/Users/João/Desktop/codigo/python/robloxteste/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\robloxteste.dir\\main.cpp.obj -c C:\\Users\\João\\Desktop\\codigo\\python\\robloxteste\\main.cpp",
+  "file": "C:/Users/João/Desktop/codigo/python/robloxteste/main.cpp",
+  "output": "CMakeFiles/robloxteste.dir/main.cpp.obj"
+}
+]
