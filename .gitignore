@@ -2,5 +2,4 @@ CMakePresets.json
 CppProperties.json
 out/**
 .vs/**
-screenfind.png
-screen_new.png
+*.png
