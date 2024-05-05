@@ -1,34 +1,36 @@
 #include <iostream>
 #include <windows.h>
 #include <wincodec.h>
+#include <string>
+#include <vector>
 #include <opencv2/opencv.hpp>
+#include <codecvt>
 
 using namespace std;
+using namespace cv;
 
-bool compareScreenshots(int x, int y, int width, int height, double threshold) {
+static double storedDiff = 300;
 
-    //todo
-
-    wstring name = L"teste1.png";
-    wstring name2 = L"teste2.png";
-
-    takeScreenshot(x, y, width, height, name.c_str());
-    takeScreenshot(x, y, width, height, name2.c_str());
-
-    cout << "Done";
-
-    return false;
+bool findApplicationWindow(LPCSTR name) {
+    HWND hwnd = FindWindow(NULL, name);
+    if (hwnd != NULL) {
+        SetForegroundWindow(hwnd);
+        cout << "Window found!\n" << endl;
+        return true;
+    }
+    else {
+        cout << "Window not found!\n" << endl;
+        return false;
+    }
 }
 
 void takeScreenshot(int left, int top, int width, int height, LPCWSTR filename) {
-    // Copy screen to bitmap
     HDC hScreen = GetDC(NULL);
     HDC hDC = CreateCompatibleDC(hScreen);
     HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, width, height);
     HGDIOBJ old_obj = SelectObject(hDC, hBitmap);
     BOOL bRet = BitBlt(hDC, 0, 0, width, height, hScreen, left, top, SRCCOPY);
 
-    // Save bitmap to PNG file
     IWICImagingFactory* pFactory = NULL;
     IWICBitmapEncoder* pEncoder = NULL;
     IWICBitmapFrameEncode* pFrame = NULL;
@@ -44,20 +46,16 @@ void takeScreenshot(int left, int top, int width, int height, LPCWSTR filename) 
     pFrame->Initialize(NULL);
     pFrame->SetSize(width, height);
 
-    // Convert HBITMAP to IWICBitmapSource
     IWICBitmap* pWICBitmap = NULL;
     pFactory->CreateBitmapFromHBITMAP(hBitmap, NULL, WICBitmapUseAlpha, &pWICBitmap);
 
-    // Set pixel format
     GUID format = GUID_WICPixelFormat32bppBGRA;
     pFrame->SetPixelFormat(&format);
 
-    // Write bitmap source
     pFrame->WriteSource(pWICBitmap, NULL);
     pFrame->Commit();
     pEncoder->Commit();
 
-    // Clean up
     if (pWICBitmap) pWICBitmap->Release();
     if (pFrame) pFrame->Release();
     if (pEncoder) pEncoder->Release();
@@ -68,6 +66,113 @@ void takeScreenshot(int left, int top, int width, int height, LPCWSTR filename) 
     ReleaseDC(NULL, hScreen);
     DeleteObject(hBitmap);
     CoUninitialize();
+}
 
-    cout << "done1";
+vector<Rect> findOnScreen(string image, double threshold) {
+
+    takeScreenshot(0, 0, 1920, 1080, L"screenfind.png");
+
+    Mat screen = imread("screenfind.png");
+    Mat templateImage = imread(image);
+
+    Mat result;
+    matchTemplate(screen, templateImage, result, TM_CCOEFF_NORMED);
+
+    Mat locations;
+    cv::threshold(result, result, threshold, 1.0, cv::THRESH_TOZERO);
+    cv::findNonZero(result, locations);
+
+    vector<Rect> boundingBoxes;
+    for (int i = 0; i < locations.total(); ++i) {
+        Point loc = locations.at<Point>(i);
+        Rect boundingBox(loc.x, loc.y, templateImage.cols, templateImage.rows);
+        boundingBoxes.push_back(boundingBox);
+    }
+
+    return boundingBoxes;
+}
+
+bool compareScreenshots(LPCSTR image0name, LPCSTR image1name) {
+
+    Mat image0 = imread(image0name);
+    Mat image1 = imread(image1name);
+
+    Mat hsvImage0, hsvImage1;
+    cvtColor(image0, hsvImage0, COLOR_BGR2HSV);
+    cvtColor(image1, hsvImage1, COLOR_BGR2HSV);
+
+    Scalar lowerBound = Scalar(52, 201, 255);
+    Scalar upperBound = Scalar(102, 251, 255);
+
+    Mat filteredImage0, filteredImage1;
+    inRange(hsvImage0, lowerBound, upperBound, filteredImage0);
+    inRange(hsvImage1, lowerBound, upperBound, filteredImage1);
+    
+    Mat morphed0, morphed1;
+    Mat kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
+    morphologyEx(filteredImage0, morphed0, MORPH_CLOSE, kernel);
+    morphologyEx(filteredImage1, morphed1, MORPH_CLOSE, kernel);
+
+    vector<vector<Point>> contours0, contours1;
+    findContours(morphed0, contours0, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+    findContours(morphed1, contours1, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+
+    double maxArea0 = 0, maxArea1 = 0;
+    for (size_t i = 0; i < contours0.size(); i++) {
+        double area = contourArea(contours0[i]);
+        if (area > maxArea0) {
+            maxArea0 = area;
+        }
+    }
+    for (size_t i = 0; i < contours1.size(); i++) {
+        double area = contourArea(contours1[i]);
+        if (area > maxArea1) {
+            maxArea1 = area;
+        }
+    }
+
+    double areaDifference = abs(maxArea1 - maxArea0);
+    if (areaDifference > storedDiff) {
+        cout << "true: " << areaDifference << endl;
+        return true;
+    }
+    else {
+        cout << "false: "<< areaDifference << endl;
+        storedDiff = areaDifference;
+        return false;
+    }
+}
+
+bool shouldClick(int left, int top, int width, int height) {
+    takeScreenshot(left, top, width, height, L"screen_new.png");
+    if (compareScreenshots("screen.png", "screen_new.png")) {
+        takeScreenshot(left, top, width, height, L"screen.png");
+        return true;
+    }
+    else {
+
+        return false;
+    }
+}
+
+int main() {
+    if (findApplicationWindow("Roblox") == true) {
+        while (true) {
+            vector<Rect> fishingBarRegion = findOnScreen("C:\\Users\\João\\Desktop\\codigo\\cpp\\Slayerbot\\SlayerBot\\fishing_bar.png", 0.73);
+            vector<Rect> fishingButtonRegion = findOnScreen("C:\\Users\\João\\Desktop\\codigo\\cpp\\Slayerbot\\SlayerBot\\fishing_button.png", 0.73);
+            if (!fishingBarRegion.empty()) {
+                while (1) {
+                    if (shouldClick(fishingBarRegion[0].x, fishingBarRegion[0].y, (fishingBarRegion[0].x + fishingBarRegion[0].width), (fishingBarRegion[0].x + fishingBarRegion[0].height))) {
+                        mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, ((fishingButtonRegion[0].x + fishingButtonRegion[0].width) / 2), (fishingButtonRegion[0].y + (fishingButtonRegion[0].height) / 2), 0, 0);
+
+                        Sleep(1000);
+                    }
+                }
+            }
+            else {
+                cout << "No fishing" << endl;
+            }
+        }
+    }
+    return 0;
 }
