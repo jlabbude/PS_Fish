@@ -33,43 +33,47 @@ def find_thing_onscreen(array_index, confidence):
     except pyautogui.ImageNotFoundException:
         return None
 
-desired_window = find_window_by_application_name("Roblox")
-if desired_window:
+def main():
+    desired_window = find_window_by_application_name("Roblox")
+    if desired_window:
 
-    desired_window.activate()
-    print("Window found")
+        desired_window.activate()
+        print("Window found")
 
-    fishing_stage=0
+        fishing_stage=0
 
-    last_click_time = time.time()
+        last_click_time = time.time()
 
-    while fishing_stage < 2:
-        if find_thing_onscreen(0, 0.85):
-            print(f"Fishing started:", fishing_stage)
-            if fishing_stage == 0:
-                pyautogui.moveTo(find_thing_onscreen(0, 0.85).left + 
-                                 find_thing_onscreen(0, 0.85).width / 2,
-                                 find_thing_onscreen(0, 0.85).top + 
-                                 find_thing_onscreen(0, 0.85).height / 2)
-                time.sleep(0.5)
-            if fishing_stage == 1:
+        while fishing_stage < 2:
+            if find_thing_onscreen(0, 0.85):
+                print(f"Fishing started:", fishing_stage)
+                if fishing_stage == 0:
+                    pyautogui.moveTo(find_thing_onscreen(0, 0.85).left + 
+                                     find_thing_onscreen(0, 0.85).width / 2,
+                                     find_thing_onscreen(0, 0.85).top + 
+                                     find_thing_onscreen(0, 0.85).height / 2)
+                    time.sleep(0.5)
+                if fishing_stage == 1:
 
-                #get region
-                fishing_bar_region = find_thing_onscreen(1, 0.85)
+                    #get region
+                    fishing_bar_region = find_thing_onscreen(1, 0.85)
 
-                while find_thing_onscreen(0, 0.85) != None:
-                    if should_click():
-                        current_time = time.time()
-                        if current_time - last_click_time > 1:  # Adjust the time interval as needed
-                            pyautogui.click()
-                            last_click_time = current_time
-                    else:
-                        print("Not")
-                        print(datetime.datetime.now().strftime("%H:%M:%S.%f"))
-            fishing_stage += 1
-        else:
-            print("Not fishing")
-        time.sleep(1)
+                    while find_thing_onscreen(0, 0.85) != None:
+                        if should_click():
+                            current_time = time.time()
+                            if current_time - last_click_time > 1:  # Adjust the time interval as needed
+                                pyautogui.click()
+                                last_click_time = current_time
+                        else:
+                            print("Not")
+                            print(datetime.datetime.now().strftime("%H:%M:%S.%f"))
+                fishing_stage += 1
+            else:
+                print("Not fishing")
+            time.sleep(1)
 	
-else:
-    print("Window not found")
+    else:
+        print("Window not found")
+
+
+main()

@@ -1,2 +1,4 @@
-main.cpp
-CMakeLists.txt
+CMakePresets.json
+CppProperties.json
+out/**
+.vs/**
