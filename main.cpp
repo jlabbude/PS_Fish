@@ -158,8 +158,8 @@ bool shouldClick(int left, int top, int width, int height) {
 int main() {
     if (findApplicationWindow("Roblox") == true) {
         while (true) {
-            vector<Rect> fishingBarRegion = findOnScreen("C:\\Users\\João\\Desktop\\codigo\\cpp\\Slayerbot\\SlayerBot\\fishing_bar.png", 0.73);
-            vector<Rect> fishingButtonRegion = findOnScreen("C:\\Users\\João\\Desktop\\codigo\\cpp\\Slayerbot\\SlayerBot\\fishing_button.png", 0.73);
+            vector<Rect> fishingBarRegion = findOnScreen("fishing_bar.png", 0.73);
+            vector<Rect> fishingButtonRegion = findOnScreen("fishing_button.png", 0.73);
             if (!fishingBarRegion.empty()) {
                 while (1) {
                     if (shouldClick(fishingBarRegion[0].x, fishingBarRegion[0].y, (fishingBarRegion[0].x + fishingBarRegion[0].width), (fishingBarRegion[0].x + fishingBarRegion[0].height))) {
