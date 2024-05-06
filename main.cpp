@@ -146,8 +146,8 @@ bool compareScreenshots(LPCSTR image0name, LPCSTR image1name) {
 int main() {
     if (findApplicationWindow("Roblox") == true) {
         while (true) {
-            vector<Rect> fishingBarRegion = findOnScreen("C:\\Users\\João\\Desktop\\codigo\\cpp\\Slayerbot\\SlayerBot\\fishing_bar.png", 0.7);
-            vector<Rect> fishingButtonRegion = findOnScreen("C:\\Users\\João\\Desktop\\codigo\\cpp\\Slayerbot\\SlayerBot\\fishing_button.png", 0.7);
+            vector<Rect> fishingBarRegion = findOnScreen("fishing_bar.png", 0.7);
+            vector<Rect> fishingButtonRegion = findOnScreen("fishing_button.png", 0.7);
             if (!fishingBarRegion.empty()) {
                 SetCursorPos(((fishingButtonRegion[0].x + fishingButtonRegion[0].width) / 2), (fishingButtonRegion[0].y + (fishingButtonRegion[0].height) / 2));
                 while (1) {
