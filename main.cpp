@@ -10,6 +10,7 @@ using namespace std;
 using namespace cv;
 
 static double storedDiff = 300;
+static double areaDifference = 0;
 
 bool findApplicationWindow(LPCSTR name) {
     HWND hwnd = FindWindow(NULL, name);
@@ -107,7 +108,7 @@ bool compareScreenshots(LPCSTR image0name, LPCSTR image1name) {
     Mat filteredImage0, filteredImage1;
     inRange(hsvImage0, lowerBound, upperBound, filteredImage0);
     inRange(hsvImage1, lowerBound, upperBound, filteredImage1);
-    
+
     Mat morphed0, morphed1;
     Mat kernel = getStructuringElement(MORPH_RECT, Size(5, 5));
     morphologyEx(filteredImage0, morphed0, MORPH_CLOSE, kernel);
@@ -130,14 +131,18 @@ bool compareScreenshots(LPCSTR image0name, LPCSTR image1name) {
             maxArea1 = area;
         }
     }
-
-    double areaDifference = abs(maxArea1 - maxArea0);
+    double minAreaThreshold = 120;
+    if (maxArea0 < minAreaThreshold) {
+        cout << "false: area below threshold " << maxArea0 << endl;
+        return false;
+    }
+    areaDifference = abs(maxArea1 - maxArea0);
     if (areaDifference > storedDiff) {
         cout << "true: " << areaDifference << endl;
         return true;
     }
     else {
-        cout << "false: "<< areaDifference << endl;
+        cout << "false: " << areaDifference << endl;
         storedDiff = areaDifference;
         return false;
     }
@@ -148,17 +153,26 @@ int main() {
         while (true) {
             vector<Rect> fishingBarRegion = findOnScreen("fishing_bar.png", 0.7);
             vector<Rect> fishingButtonRegion = findOnScreen("fishing_button.png", 0.7);
-            if (!fishingBarRegion.empty()) {
-                SetCursorPos(((fishingButtonRegion[0].x + fishingButtonRegion[0].width) / 2), (fishingButtonRegion[0].y + (fishingButtonRegion[0].height) / 2));
+            if (!fishingBarRegion.empty() && !fishingButtonRegion.empty()) {
+                SetCursorPos(fishingButtonRegion[0].x + (fishingButtonRegion[0].width / 2), fishingButtonRegion[0].y + (fishingButtonRegion[0].height / 2));
+                takeScreenshot(fishingBarRegion[0].x, fishingBarRegion[0].y, (fishingBarRegion[0].x + fishingBarRegion[0].width), (fishingBarRegion[0].x + fishingBarRegion[0].height), L"screen.png");
+                Sleep(100);
                 while (1) {
-                    // todo develop break method
                     takeScreenshot(fishingBarRegion[0].x, fishingBarRegion[0].y, (fishingBarRegion[0].x + fishingBarRegion[0].width), (fishingBarRegion[0].x + fishingBarRegion[0].height), L"screen_new.png");
                     if (compareScreenshots("screen.png", "screen_new.png")) {
-                        mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, ((fishingButtonRegion[0].x + fishingButtonRegion[0].width) / 2), (fishingButtonRegion[0].y + (fishingButtonRegion[0].height) / 2), 0, 0);
+                        mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP,fishingButtonRegion[0].x + (fishingButtonRegion[0].width / 2), fishingButtonRegion[0].y + (fishingButtonRegion[0].height / 2), 0, 0);
                         Sleep(200);
                         takeScreenshot(fishingBarRegion[0].x, fishingBarRegion[0].y, (fishingBarRegion[0].x + fishingBarRegion[0].width), (fishingBarRegion[0].x + fishingBarRegion[0].height), L"screen.png");
                     }
+                    else if (storedDiff != areaDifference) {
+                        takeScreenshot(fishingBarRegion[0].x, fishingBarRegion[0].y, (fishingBarRegion[0].x + fishingBarRegion[0].width), (fishingBarRegion[0].x + fishingBarRegion[0].height), L"screen.png");
+                        break;
+                    }
                 }
+                Sleep(500);
+                keybd_event('E', 0, 0, 0);
+                keybd_event('E', 0, KEYEVENTF_KEYUP, 0);
+                mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, fishingButtonRegion[0].x + (fishingButtonRegion[0].width / 2), fishingButtonRegion[0].y + (fishingButtonRegion[0].height / 2), 0, 0);
             }
             else {
                 cout << "No fishing" << endl;
