@@ -143,29 +143,20 @@ bool compareScreenshots(LPCSTR image0name, LPCSTR image1name) {
     }
 }
 
-bool shouldClick(int left, int top, int width, int height) {
-    takeScreenshot(left, top, width, height, L"screen_new.png");
-    if (compareScreenshots("screen.png", "screen_new.png")) {
-        takeScreenshot(left, top, width, height, L"screen.png");
-        return true;
-    }
-    else {
-
-        return false;
-    }
-}
-
 int main() {
     if (findApplicationWindow("Roblox") == true) {
         while (true) {
-            vector<Rect> fishingBarRegion = findOnScreen("C:\\Users\\João\\Desktop\\codigo\\cpp\\Slayerbot\\SlayerBot\\fishing_bar.png", 0.73);
-            vector<Rect> fishingButtonRegion = findOnScreen("C:\\Users\\João\\Desktop\\codigo\\cpp\\Slayerbot\\SlayerBot\\fishing_button.png", 0.73);
+            vector<Rect> fishingBarRegion = findOnScreen("C:\\Users\\João\\Desktop\\codigo\\cpp\\Slayerbot\\SlayerBot\\fishing_bar.png", 0.7);
+            vector<Rect> fishingButtonRegion = findOnScreen("C:\\Users\\João\\Desktop\\codigo\\cpp\\Slayerbot\\SlayerBot\\fishing_button.png", 0.7);
             if (!fishingBarRegion.empty()) {
+                SetCursorPos(((fishingButtonRegion[0].x + fishingButtonRegion[0].width) / 2), (fishingButtonRegion[0].y + (fishingButtonRegion[0].height) / 2));
                 while (1) {
-                    if (shouldClick(fishingBarRegion[0].x, fishingBarRegion[0].y, (fishingBarRegion[0].x + fishingBarRegion[0].width), (fishingBarRegion[0].x + fishingBarRegion[0].height))) {
+                    // todo develop break method
+                    takeScreenshot(fishingBarRegion[0].x, fishingBarRegion[0].y, (fishingBarRegion[0].x + fishingBarRegion[0].width), (fishingBarRegion[0].x + fishingBarRegion[0].height), L"screen_new.png");
+                    if (compareScreenshots("screen.png", "screen_new.png")) {
                         mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, ((fishingButtonRegion[0].x + fishingButtonRegion[0].width) / 2), (fishingButtonRegion[0].y + (fishingButtonRegion[0].height) / 2), 0, 0);
-
-                        Sleep(1000);
+                        Sleep(200);
+                        takeScreenshot(fishingBarRegion[0].x, fishingBarRegion[0].y, (fishingBarRegion[0].x + fishingBarRegion[0].width), (fishingBarRegion[0].x + fishingBarRegion[0].height), L"screen.png");
                     }
                 }
             }
