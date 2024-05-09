@@ -150,7 +150,7 @@ bool compareScreenshots(LPCSTR image0name, LPCSTR image1name) {
 
 int main() {
     if (findApplicationWindow("Roblox") == true) {
-        while (true) {
+        while (1) {
             vector<Rect> fishingBarRegion = findOnScreen("fishing_bar.png", 0.7);
             vector<Rect> fishingButtonRegion = findOnScreen("fishing_button.png", 0.7);
             if (!fishingBarRegion.empty() && !fishingButtonRegion.empty()) {
@@ -179,5 +179,6 @@ int main() {
             }
         }
     }
+    cin.get();
     return 0;
 }
